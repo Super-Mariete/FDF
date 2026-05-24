@@ -2,21 +2,23 @@
 # PROJECT
 # ==============================
 
-NAME = cub3D
+NAME = fdf
 
 # ==============================
-# SOURCES
+# DIRECTORIES
 # ==============================
 
-SOURCES =	main.c mlx_utils.c \
-		$(addprefix parse/, parse_main.c add_scene_data.c read_data.c\
-		checklist.c store_rgb_values.c map_lines_utils.c store_map.c\
-		read_map_lines.c check_stored_map.c)\
-		$(addprefix window_mlx_management/, background.c link_images.c)\
-		$(addprefix clean/, clean_file_data.c clean_up.c destroy_mlx.c)
+SRC_DIR = src
+OBJ_DIR = obj
+INC_DIR = inc
+LIBFT_DIR = libft
 
-SRCS = $(addprefix sources/, $(SOURCES))
-OBJECTS = $(SRCS:.c=.o)
+# ==============================
+# FILES
+# ==============================
+
+SRCS = main.c parsing.c draw.c
+OBJS = $(SRCS:%.c=$(OBJ_DIR)/%.o)
 
 # ==============================
 # COMPILER
@@ -24,15 +26,9 @@ OBJECTS = $(SRCS:.c=.o)
 
 CC = cc
 CFLAGS = -Wall -Wextra -Werror
-RM = rm -f
+RM = rm -rf
 
-# ==============================
-# LIBFT
-# ==============================
-
-LIBFT_DIR = ./libft
 LIBFT = $(LIBFT_DIR)/libft.a
-LIBFT_FLAGS = -L $(LIBFT_DIR) -lft
 
 # ==============================
 # SYSTEM DETECTION
@@ -40,38 +36,21 @@ LIBFT_FLAGS = -L $(LIBFT_DIR) -lft
 
 UNAME := $(shell uname)
 
-# ==============================
-# MLX CONFIG
-# ==============================
-
 ifeq ($(UNAME), Linux)
-
 	MLX_DIR = ./mlx_linux
-	MLX = $(MLX_DIR)/libmlx.a
-	MLX_INCLUDE = -Imlx_linux
-
-	MLX_FLAGS = -Lmlx_linux -lmlx_Linux -L/usr/lib/X11 -lXext -lX11 -lm
-
-endif
-
-ifeq ($(UNAME), Darwin)
-
+	MLX_FLAGS = -L$(MLX_DIR) -lmlx_Linux -L/usr/lib/X11 -lXext -lX11 -lm
+else
 	MLX_DIR = ./mlx_mac
-	MLX = $(MLX_DIR)/libmlx.a
-	MLX_INCLUDE = -Imlx_mac
-
-	MLX_FLAGS = -Lmlx_mac -lmlx -framework OpenGL -framework AppKit
-
+	MLX_FLAGS = -L$(MLX_DIR) -lmlx -framework OpenGL -framework AppKit
 endif
+MLX = $(MLX_DIR)/libmlx.a
 
 # ==============================
 # INCLUDES
 # ==============================
 
-INCLUDE = -I./include -I./libft $(MLX_INCLUDE)
-CFLAGS += $(INCLUDE)
-
-LIBS_FLAGS = $(LIBFT_FLAGS) $(MLX_FLAGS)
+INCLUDES = -I$(INC_DIR) -I$(LIBFT_DIR) -I$(MLX_DIR)
+CFLAGS += $(INCLUDES)
 
 # ==============================
 # RULES
@@ -79,60 +58,31 @@ LIBS_FLAGS = $(LIBFT_FLAGS) $(MLX_FLAGS)
 
 all: $(NAME)
 
-# ------------------------------
-# LIBFT
-# ------------------------------
-
 $(LIBFT):
-	@echo "Compiling Libft..."
-	@make -s -C $(LIBFT_DIR)
-
-# ------------------------------
-# MLX
-# ------------------------------
+	@make -C $(LIBFT_DIR)
 
 $(MLX):
-	@if [ ! -d "$(MLX_DIR)" ]; then \
-		echo "Error: MiniLibX folder not found -> $(MLX_DIR)"; \
-		exit 1; \
-	fi
-	@echo "Compiling MLX for $(UNAME)..."
-	@make -s -C $(MLX_DIR)
+	@make -C $(MLX_DIR)
 
-# ------------------------------
-# BUILD
-# ------------------------------
+$(NAME): $(LIBFT) $(MLX) $(OBJS)
+	@$(CC) $(CFLAGS) $(OBJS) -L$(LIBFT_DIR) -lft $(MLX_FLAGS) -o $(NAME)
+	@echo "FdF compiled successfully for $(UNAME)!"
 
-$(NAME): $(LIBFT) $(MLX) $(OBJECTS)
-	$(CC) $(CFLAGS) $(OBJECTS) $(LIBS_FLAGS) -o $(NAME)
-	@echo "$(NAME) created for $(UNAME)"
-
-# ------------------------------
-# OBJECTS
-# ------------------------------
-
-sources/%.o: sources/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-# ==============================
-# CLEAN
-# ==============================
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(INC_DIR)/fdf.h
+	@mkdir -p $(OBJ_DIR)
+	@$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	$(RM) $(OBJECTS)
-	@make -s -C $(LIBFT_DIR) clean
-	@if [ -d "$(MLX_DIR)" ]; then \
-		make -s -C $(MLX_DIR) clean; \
-	fi
-	@echo "Objects removed"
-
-compclean: all clean
+	@$(RM) $(OBJ_DIR)
+	@make -C $(LIBFT_DIR) clean
+	@make -C $(MLX_DIR) clean
+	@echo "Objects cleaned."
 
 fclean: clean
-	$(RM) $(NAME)
-	@make -s -C $(LIBFT_DIR) fclean
-	@echo "Binary removed"
+	@$(RM) $(NAME)
+	@make -C $(LIBFT_DIR) fclean
+	@echo "Executable and libraries cleaned."
 
 re: fclean all
 
-.PHONY: all clean compclean fclean re
+.PHONY: all clean fclean re
