@@ -43,6 +43,13 @@ typedef struct s_data
 	int		width;
 	int		height;
 	t_point	**map;
+	int		zoom;
+	double	alpha;
+	double	beta;
+	double	gamma;
+	int		x_offset;
+	int		y_offset;
+	int		is_isometric;
 }	t_data;
 
 /* Prototypes */

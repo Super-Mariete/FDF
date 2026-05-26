@@ -2,6 +2,7 @@
 
 ## Resumen
 Este proyecto consiste en crear gráficamente la representación en relieve de un paisaje, uniendo puntos (coordenadas x, y, z) mediante líneas. El programa lee un archivo `.fdf` y renderiza una malla de alambre en perspectiva isométrica.
+El objetivo es aprender sobre transformaciones matemáticas (rotación, proyección) y el uso de librerías gráficas de bajo nivel.
 
 ## Características
 - Lectura de mapas con coordenadas de altura.

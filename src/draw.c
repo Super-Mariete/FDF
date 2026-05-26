@@ -1,19 +1,53 @@
 #include "fdf.h"
 
-static void	project(t_point *p)
+static void	rotate_x(float *y, float *z, double alpha)
+{
+	float	prev_y;
+
+	prev_y = *y;
+	*y = prev_y * cos(alpha) + *z * sin(alpha);
+	*z = -prev_y * sin(alpha) + *z * cos(alpha);
+}
+
+static void	rotate_y(float *x, float *z, double beta)
+{
+	float	prev_x;
+
+	prev_x = *x;
+	*x = prev_x * cos(beta) + *z * sin(beta);
+	*z = -prev_x * sin(beta) + *z * cos(beta);
+}
+
+static void	rotate_z(float *x, float *y, double gamma)
 {
 	float	prev_x;
 	float	prev_y;
 
-	p->x *= 30;
-	p->y *= 30;
-	p->z *= 2;
-	prev_x = p->x;
-	prev_y = p->y;
-	p->x = (prev_x - prev_y) * cos(0.523599);
-	p->y = (prev_x + prev_y) * sin(0.523599) - p->z;
-	p->x += WIN_WIDTH / 2.5;
-	p->y += WIN_HEIGHT / 5;
+	prev_x = *x;
+	prev_y = *y;
+	*x = prev_x * cos(gamma) - prev_y * sin(gamma);
+	*y = prev_x * sin(gamma) + prev_y * cos(gamma);
+}
+
+static void	project(t_point *p, t_data *data)
+{
+	p->x *= data->zoom;
+	p->y *= data->zoom;
+	p->z *= (data->zoom / 10);
+	p->x -= (data->width * data->zoom) / 2;
+	p->y -= (data->height * data->zoom) / 2;
+	rotate_x(&p->y, &p->z, data->alpha);
+	rotate_y(&p->x, &p->z, data->beta);
+	rotate_z(&p->x, &p->y, data->gamma);
+	if (data->is_isometric)
+	{
+		float prev_x = p->x;
+		float prev_y = p->y;
+		p->x = (prev_x - prev_y) * cos(0.523599);
+		p->y = (prev_x + prev_y) * sin(0.523599) - p->z;
+	}
+	p->x += data->x_offset;
+	p->y += data->y_offset;
 }
 
 static void	my_mlx_pixel_put(t_data *data, int x, int y, int color)
@@ -33,8 +67,8 @@ static void	draw_line(t_point p1, t_point p2, t_data *data)
 	float	y_step;
 	int		max;
 
-	project(&p1);
-	project(&p2);
+	project(&p1, data);
+	project(&p2, data);
 	x_step = p2.x - p1.x;
 	y_step = p2.y - p1.y;
 	max = fmax(fabs(x_step), fabs(y_step));

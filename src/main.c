@@ -27,6 +27,25 @@ int	handle_key(int keycode, t_data *data)
 {
 	if (keycode == K_ESC)
 		close_app(data);
+	else if (keycode == 13) // W
+		data->alpha -= 0.05;
+	else if (keycode == 1)  // S
+		data->alpha += 0.05;
+	else if (keycode == 0)  // A
+		data->beta -= 0.05;
+	else if (keycode == 2)  // D
+		data->beta += 0.05;
+	else if (keycode == 12) // Q
+		data->gamma -= 0.05;
+	else if (keycode == 14) // E
+		data->gamma += 0.05;
+	else if (keycode == 35) // P (Perspective switch)
+		data->is_isometric = !data->is_isometric;
+	else if (keycode == 24 || keycode == 69) // +
+		data->zoom += 2;
+	else if (keycode == 27 || keycode == 78) // -
+		data->zoom = (data->zoom > 2) ? data->zoom - 2 : 2;
+	render(data);
 	return (0);
 }
 
@@ -43,6 +62,10 @@ int	main(int argc, char **argv)
 	if (argc != 2)
 		return (ft_putendl_fd("Usage: ./fdf <map.fdf>", 2), 1);
 	ft_memset(&data, 0, sizeof(t_data));
+	data.zoom = 20;
+	data.is_isometric = 1;
+	data.x_offset = WIN_WIDTH / 2;
+	data.y_offset = WIN_HEIGHT / 2;
 	data.mlx_ptr = mlx_init();
 	if (!data.mlx_ptr)
 		return (ft_putendl_fd("Error: MLX init failed", 2), 1);
